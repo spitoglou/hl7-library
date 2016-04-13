@@ -1,0 +1,27 @@
+{
+  "name": "spitoglou/multi-api",
+  "description": "Laravel HL7 library",
+  "keywords": [
+    "laravel",
+    "hl7",
+    "medical",
+    "protocol"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Stavros Pitoglou",
+      "email": "s.pitoglou@csl.gr"
+    }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Spitoglou\\HL7\\": "src/"
+    }
+  },
+  "require": {
+    "illuminate/support": "~5",
+    "phpunit/phpunit": "4.8.9"
+  }
+}
