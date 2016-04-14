@@ -26,7 +26,12 @@ class Hl7MainTest extends PHPUnit_Framework_TestCase
         $payload .= 'OBX |1 |NM |271649006 ^Systolic blood pressure ^SNOMED-CT | |132 |mm[Hg] |90-120 |H | | |F | | |20100511220525';
 
         $handler = new \Spitoglou\HL7\MessageHandler();
-        $handler->parseMessage($payload);
+        $result = $handler->parseMessage($payload);
+        print_r($result);
+
+        static::assertEquals($result['patient.fname'], 'JOHN');
+        static::assertEquals($result['observation.codeSystem.4'], 'SNOMED-CT');
+        static::assertEquals($result['message.subClass'], 'A04');
 
 
     }

@@ -44,6 +44,6 @@ class MessageHandler
             }
 
         }
-        dd($this->attributes);
+        return $this->attributes;
     }
 }
