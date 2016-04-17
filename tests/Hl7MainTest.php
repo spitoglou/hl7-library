@@ -3,27 +3,52 @@
 class Hl7MainTest extends PHPUnit_Framework_TestCase
 {
 
+
     /** @test */
     public function itCanParseTestSegment()
     {
         $segment = new \Spitoglou\HL7\TestSegment();
 
-        $segmentString = 'PID||0493575^^^2^ID 1|454721||DOE^JOHN^^^^|DOE^JOHN^^^^|19480203|M||B|254 MYSTREET AVE^^MYTOWN^OH^44123^USA||(216)123-4567|||M|NON|400003403~1129086|';
-        $segmentString = 'MSH|^~\&|EPIC|EPICADT|SMS|SMSADT|199912271408|CHARRIS|ADT^A04|1817457|D|2.5|';
+        $segmentString = $this->getTestSegment('PID');
+        static::assertContains([0 => 'PID'], $segment->parseSegment($segmentString));
 
-        dd($segment->parseSegment($segmentString));
+        $segmentString = $this->getTestSegment('A04');
+        static::assertContains([0 => 'MSH'], $segment->parseSegment($segmentString));
+    }
+
+    public function getTestSegment($head)
+    {
+        switch ($head) {
+            case 'A04':
+                return 'MSH|^~\&|EPIC|EPICADT|SMS|SMSADT|199912271408|CHARRIS|ADT^A04|1817457|D|2.5|';
+                break;
+            case 'PID':
+                return 'PID||0493575^^^2^ID 1|454721||DOE^JOHN^^^^|DOE^JOHN^^^^' .
+                '|19480203|M||B|254 MYSTREET AVE^^MYTOWN^OH^44123^USA||(216)123-4567|||M|NON|400003403~1129086|';
+                break;
+            case 'OBR':
+                return 'OBR |1 | |VS12340000 |28562-7 ^Vital Signs ^LN';
+                break;
+            case 'OBX1':
+                return 'OBX |1 |NM |271649006 ^Systolic blood pressure ^SNOMED-CT ' .
+                '| |132 |mm[Hg] |90-120 |H | | |F | | |20100511220525';
+                break;
+
+        }
+
+        return false;
     }
 
     /** @test */
     public function itCanParseTestMessage()
     {
-        $payload = 'MSH|^~\&|EPIC|EPICADT|SMS|SMSADT|199912271408|CHARRIS|ADT^A04|1817457|D|2.5|';
+        $payload = $this->getTestSegment('A04');
         $payload .= chr(10) . chr(13);
-        $payload .= 'PID||0493575^^^2^ID 1|454721||DOE^JOHN^^^^|DOE^JOHN^^^^|19480203|M||B|254 MYSTREET AVE^^MYTOWN^OH^44123^USA||(216)123-4567|||M|NON|400003403~1129086|';
+        $payload .= $this->getTestSegment('PID');
         $payload .= chr(10) . chr(13);
-        $payload .= 'OBR |1 | |VS12340000 |28562-7 ^Vital Signs ^LN';
+        $payload .= $this->getTestSegment('OBR');
         $payload .= chr(10) . chr(13);
-        $payload .= 'OBX |1 |NM |271649006 ^Systolic blood pressure ^SNOMED-CT | |132 |mm[Hg] |90-120 |H | | |F | | |20100511220525';
+        $payload .= $this->getTestSegment('OBX1');
 
         $handler = new \Spitoglou\HL7\MessageHandler();
         $result = $handler->parseMessage($payload);
