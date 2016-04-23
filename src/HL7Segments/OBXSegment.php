@@ -1,7 +1,13 @@
-<?php namespace Spitoglou\HL7;
+<?php namespace Spitoglou\HL7\HL7Segments;
 
 class OBXSegment extends Segment
 {
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->header = 'OBX';
+    }
     protected function getDefinition()
     {
         return [

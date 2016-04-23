@@ -1,13 +1,13 @@
 <?php
 
-class Hl7MainTest extends PHPUnit_Framework_TestCase
+class Hl7MainTest extends TestCase
 {
 
 
     /** @test */
     public function itCanParseTestSegment()
     {
-        $segment = new \Spitoglou\HL7\TestSegment();
+        $segment = new \Spitoglou\HL7\HL7Segments\TestSegment();
 
         $segmentString = $this->getTestSegment('PID');
         static::assertContains([0 => 'PID'], $segment->parseSegment($segmentString));
@@ -43,21 +43,68 @@ class Hl7MainTest extends PHPUnit_Framework_TestCase
     public function itCanParseTestMessage()
     {
         $payload = $this->getTestSegment('A04');
-        $payload .= chr(10) . chr(13);
+        $payload .= chr(13);
         $payload .= $this->getTestSegment('PID');
-        $payload .= chr(10) . chr(13);
+        $payload .= chr(13);
         $payload .= $this->getTestSegment('OBR');
-        $payload .= chr(10) . chr(13);
+        $payload .= chr(13);
         $payload .= $this->getTestSegment('OBX1');
 
         $handler = new \Spitoglou\HL7\MessageHandler();
+        //$handler = App::make('HL7Handler');
         $result = $handler->parseMessage($payload);
         print_r($result);
 
         static::assertEquals($result['patient.fname'], 'JOHN');
         static::assertEquals($result['observation.codeSystem.4'], 'SNOMED-CT');
-        static::assertEquals($result['message.subClass'], 'A04');
+        static::assertEquals($result['message.subclass'], 'A04');
+    }
 
+    /** @test */
+    public function itChecksThatMessageBeginsWithMSHSegment()
+    {
+        $payload = $this->getTestSegment('PID');
+        $payload .= chr(13);
+        $payload .= $this->getTestSegment('OBR');
+        $payload .= chr(13);
 
+        static::setExpectedException(Spitoglou\HL7\Exceptions\HL7MessageException::class);
+
+        $handler = new \Spitoglou\HL7\MessageHandler();
+        $handler->parseMessage($payload);
+
+    }
+
+    /** @test */
+    public function itCanCreateSegmentFromArray()
+    {
+        $array = [];
+        $array['patient.lname'] = 'Pitoglou';
+        $array['patient.fname'] = 'Stavros';
+
+        $segment = new \Spitoglou\HL7\HL7Segments\PIDSegment();
+        static::assertEquals(
+            'PID|||||Pitoglou^Stavros|||||||||||||||||||||||||||||||||||||||||||||',
+            $segment->createSegmentFromAttrs($array)
+        );
+    }
+
+    /** @test */
+    public function itCanCreateMessageFromArray()
+    {
+        $array = [];
+        $array['patient.lname'] = 'Pitoglou';
+        $array['patient.fname'] = 'Stavros';
+
+        $message = new \Spitoglou\HL7\MessageHandler();
+        //dd($message->createMessage('A01', $array));
+        static::assertContains(
+            'ADT^A01',
+            $message->createMessage('A01', $array)
+        );
+        static::assertContains(
+            'Pitoglou^Stavros',
+            $message->createMessage('A01', $array)
+        );
     }
 }
